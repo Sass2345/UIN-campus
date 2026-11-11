@@ -3,4 +3,4 @@
 
 namespace uin {
 std::string_view version();
-} // namespace uin
+}  // namespace uin
