@@ -26,7 +26,10 @@ if(UIN_ACTIVER_SANITIZERS AND NOT MSVC)
 endif()
 
 # Bibliothèque métier
-add_library(uincampus_core src/version.cpp)
+add_library(uincampus_core 
+src/version.cpp
+src/regles.cpp
+src/saisie.cpp )
 target_include_directories(uincampus_core PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_compile_definitions(uincampus_core PRIVATE UIN_VERSION="${PROJECT_VERSION}")
 target_link_libraries(uincampus_core PRIVATE uincampus_options)
@@ -83,3 +86,4 @@ find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 if(CLANG_TIDY_EXE)
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE})
 endif()
+
