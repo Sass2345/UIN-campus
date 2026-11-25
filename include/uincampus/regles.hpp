@@ -17,12 +17,11 @@ static_assert(seuilsMentions.size() == 4, "Un seuil par mention au-dessus d'Ajou
 static_assert(seuilsMentions[0] == seuilValidation,
               "La mention Passable commence au seuil de validation");
 
-constexpr bool estNoteValide(double note)
-{
+constexpr bool estNoteValide(double note) {
     return note >= noteMin && note <= noteMax;
 }
 
 Mention mentionPour(double moyenne);
 std::string_view libelle(Mention mention);
 
-} // namespace uin
+}  // namespace uin

@@ -7,18 +7,15 @@
 
 namespace uin {
 
-double somme(std::span<const double> valeurs)
-{
+double somme(std::span<const double> valeurs) {
     return std::accumulate(valeurs.begin(), valeurs.end(), 0.0);
 }
 
-double moyenne(std::span<const double> notes)
-{
+double moyenne(std::span<const double> notes) {
     return somme(notes) / static_cast<double>(notes.size());
 }
 
-double moyenne(std::span<const double> notes, std::span<const double> coefficients)
-{
+double moyenne(std::span<const double> notes, std::span<const double> coefficients) {
     double produit{};
     for (std::size_t i = 0; i < notes.size(); ++i) {
         produit += notes[i] * coefficients[i];
@@ -26,8 +23,7 @@ double moyenne(std::span<const double> notes, std::span<const double> coefficien
     return produit / somme(coefficients);
 }
 
-Statistiques calculerStatistiques(std::span<const double> notes)
-{
+Statistiques calculerStatistiques(std::span<const double> notes) {
     const auto [minIt, maxIt] = std::minmax_element(notes.begin(), notes.end());
     const double moy = moyenne(notes);
 
@@ -46,16 +42,14 @@ Statistiques calculerStatistiques(std::span<const double> notes)
     };
 }
 
-int compterValidees(std::span<const double> notes, double seuil)
-{
-    return static_cast<int>(std::count_if(notes.begin(), notes.end(),
-                                          [seuil](double note) { return note >= seuil; }));
+int compterValidees(std::span<const double> notes, double seuil) {
+    return static_cast<int>(
+        std::count_if(notes.begin(), notes.end(), [seuil](double note) { return note >= seuil; }));
 }
 
-double arrondir(double valeur, int decimales)
-{
+double arrondir(double valeur, int decimales) {
     const double facteur = std::pow(10.0, decimales);
     return std::round(valeur * facteur) / facteur;
 }
 
-} // namespace uin
+}  // namespace uin
