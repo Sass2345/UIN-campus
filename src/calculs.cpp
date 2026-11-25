@@ -1,53 +1,61 @@
 #include "uincampus/calculs.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <numeric>
+#include <span>
 
 namespace uin {
 
-double somme(const std::vector<double>& valeurs) {
+double somme(std::span<const double> valeurs)
+{
     return std::accumulate(valeurs.begin(), valeurs.end(), 0.0);
 }
 
-double moyenne(const std::vector<double>& notes) {
-    assert(!notes.empty() && "moyenne(): aucune note");
+double moyenne(std::span<const double> notes)
+{
     return somme(notes) / static_cast<double>(notes.size());
 }
 
-double moyenne(const std::vector<double>& notes, const std::vector<double>& coefficients) {
-    assert(!notes.empty() && "moyenne(): aucune note");
-    assert(notes.size() == coefficients.size() && "moyenne(): tailles différentes");
-    const double sommeCoefficients = somme(coefficients);
-    assert(sommeCoefficients > 0.0 && "moyenne(): somme des coefficients nulle");
-    const double sommePonderee =
-        std::inner_product(notes.begin(), notes.end(), coefficients.begin(), 0.0);
-    return sommePonderee / sommeCoefficients;
+double moyenne(std::span<const double> notes, std::span<const double> coefficients)
+{
+    double produit{};
+    for (std::size_t i = 0; i < notes.size(); ++i) {
+        produit += notes[i] * coefficients[i];
+    }
+    return produit / somme(coefficients);
 }
 
-Statistiques calculerStatistiques(const std::vector<double>& notes) {
-    assert(!notes.empty() && "calculerStatistiques(): aucune note");
-    const auto [mini, maxi] = std::ranges::minmax(notes);
+Statistiques calculerStatistiques(std::span<const double> notes)
+{
+    const auto [minIt, maxIt] = std::minmax_element(notes.begin(), notes.end());
     const double moy = moyenne(notes);
-    const double sommeCarres =
-        std::accumulate(notes.begin(), notes.end(), 0.0,
-                        [moy](double total, double n) { return total + (n - moy) * (n - moy); });
+
+    double sommeCarres{};
+    for (double note : notes) {
+        const double ecart = note - moy;
+        sommeCarres += ecart * ecart;
+    }
+
+    const double variance = sommeCarres / static_cast<double>(notes.size());
     return Statistiques{
-        .minimum = mini,
-        .maximum = maxi,
+        .minimum = *minIt,
+        .maximum = *maxIt,
         .moyenne = moy,
-        .ecartType = std::sqrt(sommeCarres / static_cast<double>(notes.size())),
+        .ecartType = std::sqrt(variance),
     };
 }
 
-int compterValidees(const std::vector<double>& notes, double seuil) {
-    return static_cast<int>(std::ranges::count_if(notes, [seuil](double n) { return n >= seuil; }));
+int compterValidees(std::span<const double> notes, double seuil)
+{
+    return static_cast<int>(std::count_if(notes.begin(), notes.end(),
+                                          [seuil](double note) { return note >= seuil; }));
 }
 
-double arrondir(double valeur, int decimales) {
+double arrondir(double valeur, int decimales)
+{
     const double facteur = std::pow(10.0, decimales);
     return std::round(valeur * facteur) / facteur;
 }
 
-}  // namespace uin
+} // namespace uin

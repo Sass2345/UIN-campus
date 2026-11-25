@@ -50,7 +50,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(uin-campus-tests tests/test_main.cpp)
-target_link_libraries(uin-campus-tests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(uin-campus-tests PRIVATE
+    uincampus_core
+    Catch2::Catch2WithMain
+)
 target_compile_features(uin-campus-tests PRIVATE cxx_std_23)
 
 include(CTest)

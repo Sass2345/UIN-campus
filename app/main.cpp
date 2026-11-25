@@ -1,54 +1,46 @@
-#include <cstdlib>
-#include <format>
-#include <print>
-#include <string>
-#include <string_view>
-#include <vector>
-
 #include "uincampus/calculs.hpp"
 #include "uincampus/regles.hpp"
-#include "uincampus/saisie.hpp"
-#include "uincampus/version.hpp"
 
-namespace {
+#include <array>
+#include <format>
+#include <iostream>
+#include <span>
 
-void afficherLigne(std::string_view libelle, std::string_view valeur) {
-    std::println("{:<24}{:>20}", libelle, valeur);
-}
+int main()
+{
+    constexpr std::array<double, 5> notesAlgorithme{14.5, 16.0, 12.0, 15.5, 13.0};
+    constexpr std::array<double, 5> coefficients{2.0, 2.0, 1.5, 2.0, 1.0};
 
-}  // namespace
+    static_assert(notesAlgorithme.size() == coefficients.size(),
+                  "Les tableaux de notes et de coefficients doivent avoir la même taille");
 
-int main(int argc, char* argv[]) {
-    if (argc > 1 && std::string_view{argv[1]} == "--version") {
-        std::println("uin-campus {}", uin::version());
-        return EXIT_SUCCESS;
-    }
+    const std::span<const double> vueNotes{notesAlgorithme};
+    const std::span<const double> vueCoeffs{coefficients};
 
-    std::println("UIN-Campus {} — Relevé d'un étudiant\n", uin::version());
-    const std::string nom = uin::lireTexte("Nom de l'étudiant : ");
-    const int nbUE = uin::lireEntier("Nombre d'UE (1 à 30) : ", 1, 30);
+    const uin::Statistiques stats = uin::calculerStatistiques(vueNotes);
+    const double moyPonderee = uin::moyenne(vueNotes, vueCoeffs);
+    const double moyArrondie = uin::arrondir(moyPonderee, 2);
+    const uin::Mention mention = uin::mentionPour(moyArrondie);
+    const int validees = uin::compterValidees(vueNotes);
 
-    std::vector<double> notes;
-    std::vector<double> coefficients;
-    for (int i{1}; i <= nbUE; ++i) {
-        notes.push_back(uin::lireNote(std::format("  Note de l'UE {} : ", i)));
-        coefficients.push_back(static_cast<double>(
-            uin::lireEntier(std::format("  Coefficient de l'UE {} : ", i), 1, 10)));
-    }
+    // Exemple de sous-tranche sans copie mémoire : les 3 premières évaluations
+    const std::span<const double> premieresNotes = vueNotes.first(3);
+    const double moyPremieres = uin::arrondir(uin::moyenne(premieresNotes), 2);
 
-    const double moyenneGenerale = uin::arrondir(uin::moyenne(notes, coefficients));
-    const auto [mini, maxi, moyenneSimple, ecartType] = uin::calculerStatistiques(notes);
-    const int validees = uin::compterValidees(notes);
+    std::cout << std::format(
+        "UIN-Campus — Synthèse des notes\n"
+        "  Min / Max / Écart-type : {:.2f} / {:.2f} / {:.2f}\n"
+        "  Moyenne pondérée       : {:.2f} ({})\n"
+        "  Épreuves validées      : {} / {}\n"
+        "  Moyenne 3 premières    : {:.2f}\n",
+        stats.minimum,
+        stats.maximum,
+        stats.ecartType,
+        moyArrondie,
+        uin::libelle(mention),
+        validees,
+        static_cast<int>(vueNotes.size()),
+        moyPremieres);
 
-    std::println("\n{:-<44}", "");
-    afficherLigne("Étudiant", nom);
-    afficherLigne("Moyenne pondérée", std::format("{:.2f}", moyenneGenerale));
-    afficherLigne("Moyenne simple", std::format("{:.2f}", moyenneSimple));
-    afficherLigne("Note min / max", std::format("{:.2f} / {:.2f}", mini, maxi));
-    afficherLigne("Écart-type", std::format("{:.2f}", ecartType));
-    afficherLigne("UE validées", std::format("{} / {}", validees, nbUE));
-    afficherLigne("Mention", uin::libelle(uin::mentionPour(moyenneGenerale)));
-    std::println("{:-<44}", "");
-
-    return EXIT_SUCCESS;
+    return 0;
 }
